@@ -1,0 +1,47 @@
+# Build output
+bin/
+obj/
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+
+# Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Environment files / secrets
+.env
+.env.*
+!.env.example
+
+# App settings with local secrets
+appsettings.Development.json
+**/appsettings.Development.json
+
+# Local database / temporary files
+*.db
+*.sqlite
+*.sqlite3
+
+# Test / coverage output
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# NuGet
+*.nupkg
+
+# Docker override local files
+docker-compose.override.yml
+compose.override.yaml
