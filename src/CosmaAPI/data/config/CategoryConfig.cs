@@ -1,3 +1,4 @@
+using CosmaAPI.data.seed;
 using CosmaAPI.entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -14,5 +15,7 @@ public class CategoryConfig : IEntityTypeConfiguration<Category>
         builder.Property(x => x.ColorHex).HasMaxLength(20);
         builder.Property(x => x.Icon).HasMaxLength(50);
         builder.Property(x => x.IsActive).IsRequired();
+
+        builder.HasData(CategorySeedData.GetSeedData());
     }
 }
