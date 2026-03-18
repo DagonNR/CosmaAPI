@@ -3,6 +3,7 @@ using System;
 using CosmaAPI.data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CosmaAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260313201709_RefineModel")]
+    partial class RefineModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -50,88 +53,6 @@ namespace CosmaAPI.Migrations
                         .IsUnique();
 
                     b.ToTable("categories", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
-                            ColorHex = "#EF4444",
-                            Icon = "food",
-                            IsActive = true,
-                            Name = "Comida"
-                        },
-                        new
-                        {
-                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            ColorHex = "#3B82F6",
-                            Icon = "transport",
-                            IsActive = true,
-                            Name = "Transporte"
-                        },
-                        new
-                        {
-                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
-                            ColorHex = "#8B5CF6",
-                            Icon = "home",
-                            IsActive = true,
-                            Name = "Renta"
-                        },
-                        new
-                        {
-                            Id = new Guid("44444444-4444-4444-4444-444444444444"),
-                            ColorHex = "#F59E0B",
-                            Icon = "entertainment",
-                            IsActive = true,
-                            Name = "Entretenimiento"
-                        },
-                        new
-                        {
-                            Id = new Guid("55555555-5555-5555-5555-555555555555"),
-                            ColorHex = "#10B981",
-                            Icon = "health",
-                            IsActive = true,
-                            Name = "Salud"
-                        },
-                        new
-                        {
-                            Id = new Guid("66666666-6666-6666-6666-666666666666"),
-                            ColorHex = "#EC4899",
-                            Icon = "suscription",
-                            IsActive = true,
-                            Name = "Suscripciones"
-                        },
-                        new
-                        {
-                            Id = new Guid("77777777-7777-7777-7777-777777777777"),
-                            ColorHex = "#6366F1",
-                            Icon = "shopping",
-                            IsActive = true,
-                            Name = "Compras"
-                        },
-                        new
-                        {
-                            Id = new Guid("88888888-8888-8888-8888-888888888888"),
-                            ColorHex = "#14B8A6",
-                            Icon = "education",
-                            IsActive = true,
-                            Name = "Educación"
-                        },
-                        new
-                        {
-                            Id = new Guid("99999999-9999-9999-9999-999999999999"),
-                            ColorHex = "#84CC16",
-                            Icon = "services",
-                            IsActive = true,
-                            Name = "Servicios"
-                        },
-                        new
-                        {
-                            Id = new Guid("dddddddd-dddd-dddd-dddd-dddddddddddd"),
-                            ColorHex = "#6B7280",
-                            Icon = "other",
-                            IsActive = true,
-                            Name = "Otros"
-                        });
                 });
 
             modelBuilder.Entity("CosmaAPI.entities.Expense", b =>
