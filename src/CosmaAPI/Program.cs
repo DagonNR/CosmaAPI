@@ -9,17 +9,42 @@ using CosmaAPI.auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using CosmaAPI.Services.Implementations;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "CosmaAPI",
+        Version = "v1",
+        Description = "Personal expense tracking API."
+    });
+
+    options.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Description = "Paste only the JWT token here"
+    });
+
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new("bearer", document)] = new List<string>()
+    });
+});
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection(JwtOptions.SectionName));
+
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
@@ -35,7 +60,9 @@ builder.Services
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = jwtOptions.Audience,
+            ValidIssuer = jwtOptions.Issuer,
+            ValidateAudience = true,
+            ValidAudience = jwtOptions.Audience,
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtOptions.Key)),
