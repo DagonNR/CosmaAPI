@@ -12,5 +12,5 @@ public class ExpenseResponseDTO
     public Guid CategoryId { get; set; }
     public string CategoryName { get; set; } = string.Empty;
     public DateTime CreatedAtUtc { get; set; }
-    public DateTime UpdatedAtUtc { get; set; }
+    public DateTime? UpdatedAtUtc { get; set; }
 }

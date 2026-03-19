@@ -48,6 +48,7 @@ builder.Services.Configure<JwtOptions>(
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddScoped<IExpenseService, ExpenseService>();
 
 var jwtOptions = builder.Configuration
     .GetSection(JwtOptions.SectionName)
