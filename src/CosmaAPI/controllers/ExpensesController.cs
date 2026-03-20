@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using CosmaAPI.DTOs.expenses;
 using CosmaAPI.services.interfaces;
+using CosmaAPI.DTOs.common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 namespace CosmaAPI.controllers;
@@ -44,18 +45,25 @@ public class ExpensesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<ExpenseResponseDTO>>> GetAll(
+    public async Task<ActionResult<PagedResponseDTO<ExpenseResponseDTO>>> GetAll(
         [FromQuery] ExpenseQueryDTO query,
-        CancellationToken cancellationToken
-    )
+        CancellationToken cancellationToken)
     {
-        var userId = GetCurrentUserId();
-        var expenses = await _expenseService.GetAllAsync(
-            userId,
-            query,
-            cancellationToken
-        );
-        return Ok(expenses);
+        try
+        {
+            var userId = GetCurrentUserId();
+
+            var expenses = await _expenseService.GetAllAsync(
+                userId,
+                query,
+                cancellationToken);
+
+            return Ok(expenses);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpGet("{id:guid}")]
