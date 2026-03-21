@@ -22,15 +22,8 @@ public class AuthController : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        try
-        {
-            var response = await _authService.RegisterAsync(request, cancellationToken);
-            return Ok(response);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new {message = ex.Message});
-        }
+        var response = await _authService.RegisterAsync(request, cancellationToken);
+        return Ok(response);
     }
 
     [HttpPost("login")]
@@ -40,15 +33,8 @@ public class AuthController : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        try
-        {
-            var response = await _authService.LoginAsync(request, cancellationToken);
-            return Ok(response);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return Unauthorized(new {message = ex.Message});
-        }
+        var response = await _authService.LoginAsync(request, cancellationToken);
+        return Ok(response);
     }
 
     [HttpGet("me")]

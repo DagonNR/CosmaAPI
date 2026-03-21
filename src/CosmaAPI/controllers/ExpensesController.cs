@@ -24,24 +24,17 @@ public class ExpensesController : ControllerBase
         CancellationToken cancellationToken
         )
     {
-        try
-        {
-            var userId = GetCurrentUserId();
-            var response = await _expenseService.CreateAsync(
-                userId,
-                request,
-                cancellationToken
-            );
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id = response.Id },
-                response
-            );
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        var userId = GetCurrentUserId();
+        var response = await _expenseService.CreateAsync(
+            userId,
+            request,
+            cancellationToken
+        );
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = response.Id },
+            response
+        );
     }
 
     [HttpGet]
@@ -49,21 +42,14 @@ public class ExpensesController : ControllerBase
         [FromQuery] ExpenseQueryDTO query,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            var userId = GetCurrentUserId();
+        var userId = GetCurrentUserId();
 
-            var expenses = await _expenseService.GetAllAsync(
-                userId,
-                query,
-                cancellationToken);
+        var expenses = await _expenseService.GetAllAsync(
+            userId,
+            query,
+            cancellationToken);
 
-            return Ok(expenses);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        return Ok(expenses);
     }
 
     [HttpGet("{id:guid}")]
@@ -92,25 +78,18 @@ public class ExpensesController : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        try
+        var userId = GetCurrentUserId();
+        var expense = await _expenseService.UpdateAsync(
+            userId,
+            id,
+            request,
+            cancellationToken
+        );
+        if (expense == null)
         {
-            var userId = GetCurrentUserId();
-            var expense = await _expenseService.UpdateAsync(
-                userId,
-                id,
-                request,
-                cancellationToken
-            );
-            if (expense == null)
-            {
-                return NotFound(new { message = "Gasto no encontrado." });
-            }
-            return Ok(expense);
+            return NotFound(new { message = "Gasto no encontrado." });
         }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        return Ok(expense);
     }
 
     [HttpDelete("{id:guid}")]
