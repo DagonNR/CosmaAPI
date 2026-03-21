@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using CosmaAPI.DTOs.expenses;
 using CosmaAPI.services.interfaces;
+using CosmaAPI.DTOs.common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 namespace CosmaAPI.controllers;
@@ -23,38 +24,31 @@ public class ExpensesController : ControllerBase
         CancellationToken cancellationToken
         )
     {
-        try
-        {
-            var userId = GetCurrentUserId();
-            var response = await _expenseService.CreateAsync(
-                userId,
-                request,
-                cancellationToken
-            );
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id = response.Id },
-                response
-            );
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        var userId = GetCurrentUserId();
+        var response = await _expenseService.CreateAsync(
+            userId,
+            request,
+            cancellationToken
+        );
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = response.Id },
+            response
+        );
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<ExpenseResponseDTO>>> GetAll(
+    public async Task<ActionResult<PagedResponseDTO<ExpenseResponseDTO>>> GetAll(
         [FromQuery] ExpenseQueryDTO query,
-        CancellationToken cancellationToken
-    )
+        CancellationToken cancellationToken)
     {
         var userId = GetCurrentUserId();
+
         var expenses = await _expenseService.GetAllAsync(
             userId,
             query,
-            cancellationToken
-        );
+            cancellationToken);
+
         return Ok(expenses);
     }
 
@@ -84,25 +78,18 @@ public class ExpensesController : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        try
+        var userId = GetCurrentUserId();
+        var expense = await _expenseService.UpdateAsync(
+            userId,
+            id,
+            request,
+            cancellationToken
+        );
+        if (expense == null)
         {
-            var userId = GetCurrentUserId();
-            var expense = await _expenseService.UpdateAsync(
-                userId,
-                id,
-                request,
-                cancellationToken
-            );
-            if (expense == null)
-            {
-                return NotFound(new { message = "Gasto no encontrado." });
-            }
-            return Ok(expense);
+            return NotFound(new { message = "Gasto no encontrado." });
         }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        return Ok(expense);
     }
 
     [HttpDelete("{id:guid}")]
