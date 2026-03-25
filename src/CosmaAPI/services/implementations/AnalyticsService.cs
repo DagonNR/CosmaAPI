@@ -92,4 +92,71 @@ public class AnalyticsService : IAnalyticsService
             NonEssentialPercentage = nonEssentialPercentage
         };
     }
+
+    public async Task<CategoryBreakdownResponseDTO> GetCategoryBreakdownAsync(
+        Guid userId,
+        int year,
+        int month,
+        CancellationToken cancellationToken = default)
+    {
+        if (year < 2000 || year > 2100)
+        {
+            throw new InvalidOperationException("El año está fuera del rango permitido.");
+        }
+
+        if (month < 1 || month > 12)
+        {
+            throw new InvalidOperationException("El mes debe estar entre 1 y 12.");
+        }
+
+        var startDate = new DateOnly(year, month, 1);
+        var endDate = startDate.AddMonths(1);
+
+        var baseQuery = _dbContext.Expenses
+            .AsNoTracking()
+            .Where(x => x.UserId == userId && x.Date >= startDate && x.Date < endDate);
+
+        var totalSpent = await baseQuery
+            .SumAsync(x => (decimal?)x.Amount, cancellationToken) ?? 0m;
+
+        var categoryData = await baseQuery
+            .GroupBy(x => new 
+            { 
+                x.CategoryId, 
+                CategoryName = x.Category.Name, 
+                x.Category.ColorHex, 
+                x.Category.Icon })
+            .Select(g => new
+            {
+                g.Key.CategoryId,
+                g.Key.CategoryName,
+                g.Key.ColorHex,
+                g.Key.Icon,
+                TotalAmount = g.Sum(x => x.Amount),
+                TransactionCount = g.Count()
+            })
+            .OrderByDescending(x => x.TotalAmount)
+            .ToListAsync(cancellationToken);
+
+        var categories = categoryData
+            .Select(x => new CategoryBreakdownItemDTO
+            {
+                CategoryId = x.CategoryId,
+                CategoryName = x.CategoryName,
+                ColorHex = x.ColorHex,
+                Icon = x.Icon,
+                TotalAmount = x.TotalAmount,
+                PercentageOfTotal = totalSpent == 0 ? 0 : Math.Round((x.TotalAmount / totalSpent) * 100m, 2),
+                TransactionCount = x.TransactionCount
+            })
+            .ToList();
+        
+        return new CategoryBreakdownResponseDTO
+        {
+            Year = year,
+            Month = month,
+            TotalSpent = totalSpent,
+            Categories = categories
+        };
+    }
 }

@@ -9,4 +9,11 @@ public interface IAnalyticsService
         int month,
         CancellationToken cancellationToken = default
         );
+    
+    Task<CategoryBreakdownResponseDTO> GetCategoryBreakdownAsync(
+        Guid userId,
+        int year,
+        int month,
+        CancellationToken cancellationToken = default
+        );
 }

@@ -35,6 +35,23 @@ public class AnalyticsController : ControllerBase
         return Ok(summary);
     }
 
+    [HttpGet("category-breakdown")]
+    public async Task<ActionResult<CategoryBreakdownResponseDTO>> GetCategoryBreakdown(
+        [FromQuery] int year,
+        [FromQuery] int month,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetCurrentUserId();
+
+        var breakdown = await _analyticsService.GetCategoryBreakdownAsync(
+            userId,
+            year,
+            month,
+            cancellationToken);
+
+        return Ok(breakdown);
+    }
+
     private Guid GetCurrentUserId()
     {
         var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
