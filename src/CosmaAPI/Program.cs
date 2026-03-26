@@ -16,8 +16,8 @@ using CosmaAPI.Data.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllers();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -25,7 +25,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "CosmaAPI",
         Version = "v1",
-        Description = "Personal expense tracking API."
+        Description = "Personal expense tracking API built with ASP.NET Core."
     });
 
     options.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
@@ -48,14 +48,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection(JwtOptions.SectionName));
 
-builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.Configure<DevelopmentSeedingOptions>(
     builder.Configuration.GetSection(DevelopmentSeedingOptions.SectionName));
-builder.Services.AddScoped<IExpenseService, ExpenseService>();
-builder.Services.AddScoped<ICategoryService, CategoryService>();
-builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 
 var jwtOptions = builder.Configuration
     .GetSection(JwtOptions.SectionName)
@@ -69,20 +63,30 @@ builder.Services
         {
             ValidateIssuer = true,
             ValidIssuer = jwtOptions.Issuer,
+
             ValidateAudience = true,
             ValidAudience = jwtOptions.Audience,
+
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtOptions.Key)),
+
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero
         };
     });
 
 builder.Services.AddAuthorization();
+
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IExpenseService, ExpenseService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -93,22 +97,32 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
-if (app.Environment.IsDevelopment())
+app.MapGet("/health", () => Results.Ok(new
 {
-    using var scope = app.Services.CreateScope();
+    status = "ok",
+    service = "CosmaAPI"
+}));
 
-    var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+using (var scope = app.Services.CreateScope())
+{
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await dbContext.Database.MigrateAsync();
 
-    var seedingOptions = configuration
-        .GetSection(DevelopmentSeedingOptions.SectionName)
-        .Get<DevelopmentSeedingOptions>() ?? new DevelopmentSeedingOptions();
-
-    if (seedingOptions.Enabled)
+    if (app.Environment.IsDevelopment())
     {
-        await DevelopmentExpenseSeeder.SeedAsync(dbContext, seedingOptions);
+        var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+        var seedingOptions = configuration
+            .GetSection(DevelopmentSeedingOptions.SectionName)
+            .Get<DevelopmentSeedingOptions>() ?? new DevelopmentSeedingOptions();
+
+        if (seedingOptions.Enabled)
+        {
+            await DevelopmentExpenseSeeder.SeedAsync(dbContext, seedingOptions);
+        }
     }
 }
 
