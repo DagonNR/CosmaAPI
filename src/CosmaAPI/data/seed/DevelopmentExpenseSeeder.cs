@@ -15,7 +15,7 @@ public static class DevelopmentExpenseSeeder
         DevelopmentSeedingOptions options)
     {
         const string demoEmail = "demo@cosmaapi.com";
-        const string demoPassword = "Demo123456!";
+        const string demoPassword = "password123";
 
         var passwordHasher = new PasswordHasher<User>();
 
