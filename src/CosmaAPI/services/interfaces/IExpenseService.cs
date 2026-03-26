@@ -1,4 +1,5 @@
 using CosmaAPI.DTOs.expenses;
+using CosmaAPI.DTOs.common;
 namespace CosmaAPI.services.interfaces;
 
 public interface IExpenseService
@@ -8,7 +9,7 @@ public interface IExpenseService
         CreateExpenseRequestDTO request,
         CancellationToken cancellationToken = default
         );
-    Task<List<ExpenseResponseDTO>> GetAllAsync(
+    Task<PagedResponseDTO<ExpenseResponseDTO>> GetAllAsync(
         Guid userId,
         ExpenseQueryDTO query,
         CancellationToken cancellationToken = default

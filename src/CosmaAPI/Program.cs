@@ -2,14 +2,17 @@ using CosmaAPI.data;
 using CosmaAPI.entities;
 using CosmaAPI.services.implementations;
 using CosmaAPI.services.interfaces;
+using CosmaAPI.auth;
+using CosmaAPI.middleware;
+using CosmaAPI.data.seed;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
-using CosmaAPI.auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using CosmaAPI.Services.Implementations;
 using Microsoft.OpenApi;
+using CosmaAPI.Data.Seed;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,7 +51,11 @@ builder.Services.Configure<JwtOptions>(
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.Configure<DevelopmentSeedingOptions>(
+    builder.Configuration.GetSection(DevelopmentSeedingOptions.SectionName));
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 
 var jwtOptions = builder.Configuration
     .GetSection(JwtOptions.SectionName)
@@ -82,7 +89,27 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+
+    var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+    var seedingOptions = configuration
+        .GetSection(DevelopmentSeedingOptions.SectionName)
+        .Get<DevelopmentSeedingOptions>() ?? new DevelopmentSeedingOptions();
+
+    if (seedingOptions.Enabled)
+    {
+        await DevelopmentExpenseSeeder.SeedAsync(dbContext, seedingOptions);
+    }
+}
+
 app.Run();
